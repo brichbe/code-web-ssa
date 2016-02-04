@@ -3,12 +3,14 @@ package com.codeweb.ssa;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
 import com.codeweb.ssa.model.ProjectPackage;
 import com.codeweb.ssa.model.ProjectSrcFile;
 import com.codeweb.ssa.model.ProjectStructure;
+import com.codeweb.ssa.util.CountSLOC;
 
 public class SSA
 {
@@ -51,7 +53,7 @@ public class SSA
       {
         for (ProjectSrcFile src : pkg.getSrcFiles())
         {
-          System.out.println("\t" + src.getName());
+          System.out.println("\t" + src.getName() + "  (" + src.getSlocCount() + ")");
         }
       }
       print(pkg.getSubPackages());
@@ -92,8 +94,16 @@ public class SSA
         {
           for (File dirFile : dirFiles)
           {
-            ProjectSrcFile srcFile = new ProjectSrcFile(dirFile.getName());
-            curPackage.addSrcFile(srcFile);
+            
+            try
+            {
+              ProjectSrcFile srcFile = new ProjectSrcFile(dirFile.getName(), CountSLOC.getLines(dirFile));
+              curPackage.addSrcFile(srcFile);
+            }
+            catch (IOException e)
+            {
+              e.printStackTrace();
+            }
           }
         }
 
