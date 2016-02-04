@@ -1,8 +1,6 @@
 package com.codeweb.ssa;
 
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,9 +9,14 @@ import com.codeweb.ssa.model.ProjectPackage;
 import com.codeweb.ssa.model.ProjectSrcFile;
 import com.codeweb.ssa.model.ProjectStructure;
 import com.codeweb.ssa.util.CountSLOC;
+import com.codeweb.ssa.util.PackageFileFilter;
+import com.codeweb.ssa.util.SourceFilenameFilter;
 
 public class SSA
 {
+  private static final PackageFileFilter PACKAGE_FILTER = new PackageFileFilter();
+  private static final SourceFilenameFilter SOURCE_FILTER = new SourceFilenameFilter();
+
   public static void main(String[] args)
   {
     String projName = "Sandbox";
@@ -67,23 +70,8 @@ public class SSA
     File file = new File(dirPath);
     if (file.exists() && file.canRead())
     {
-      File[] dirFiles = file.listFiles(new FilenameFilter()
-      {
-        @Override
-        public boolean accept(File dir, String name)
-        {
-          return name.toLowerCase().endsWith(".java");
-        }
-      });
-      File[] subDirs = file.listFiles(new FileFilter()
-      {
-        @Override
-        public boolean accept(File pathname)
-        {
-          return (pathname != null && pathname.isDirectory());
-        }
-      });
-
+      File[] dirFiles = file.listFiles(SOURCE_FILTER);
+      File[] subDirs = file.listFiles(PACKAGE_FILTER);
       if ((dirFiles != null && dirFiles.length > 0) || (subDirs != null && subDirs.length > 0))
       {
         String pkgName = (parentPkg != null ? parentPkg + "." : "") + file.getName();
@@ -94,7 +82,6 @@ public class SSA
         {
           for (File dirFile : dirFiles)
           {
-            
             try
             {
               ProjectSrcFile srcFile = new ProjectSrcFile(dirFile.getName(), CountSLOC.getLines(dirFile));
