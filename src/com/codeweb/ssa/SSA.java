@@ -39,7 +39,7 @@ public class SSA
   private static ProjectStructure createProject(String projName, String srcTopDir)
   {
     ProjectStructure projStructure = new ProjectStructure(projName);
-    Collection<ProjectPackage> projPackages = buildPackageStructure(null, srcTopDir);
+    Collection<ProjectPackage> projPackages = buildPackageStructure(srcTopDir);
     for (ProjectPackage pkg : projPackages)
     {
       projStructure.addTopPackage(pkg);
@@ -63,7 +63,25 @@ public class SSA
     }
   }
 
-  static Collection<ProjectPackage> buildPackageStructure(String parentPkg, String dirPath)
+  static Collection<ProjectPackage> buildPackageStructure(String srcTopDir)
+  {
+    Collection<ProjectPackage> topPackages = new ArrayList<>();
+    File file = new File(srcTopDir);
+    if (file.exists() && file.canRead())
+    {
+      File[] subDirs = file.listFiles(PACKAGE_FILTER);
+      if (subDirs != null && subDirs.length > 0)
+      {
+        for (File f : subDirs)
+        {
+          topPackages.addAll(buildPackageStructure(null, f.getAbsolutePath()));
+        }
+      }
+    }
+    return topPackages;
+  }
+
+  static Collection<ProjectPackage> buildPackageStructure(ProjectPackage parentPkg, String dirPath)
   {
     Collection<ProjectPackage> packages = new ArrayList<>();
 
@@ -74,7 +92,7 @@ public class SSA
       File[] subDirs = file.listFiles(PACKAGE_FILTER);
       if ((dirFiles != null && dirFiles.length > 0) || (subDirs != null && subDirs.length > 0))
       {
-        String pkgName = (parentPkg != null ? parentPkg + "." : "") + file.getName();
+        String pkgName = (parentPkg != null ? parentPkg.getName() + "." : "") + file.getName();
         ProjectPackage curPackage = new ProjectPackage(pkgName);
         packages.add(curPackage);
 
@@ -98,7 +116,7 @@ public class SSA
         {
           for (File subDir : subDirs)
           {
-            Collection<ProjectPackage> subPkgs = buildPackageStructure(curPackage.getName(), subDir.getAbsolutePath());
+            Collection<ProjectPackage> subPkgs = buildPackageStructure(curPackage, subDir.getAbsolutePath());
             if (!subPkgs.isEmpty())
             {
               for (ProjectPackage pkg : subPkgs)
