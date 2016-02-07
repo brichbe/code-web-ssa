@@ -33,7 +33,7 @@ public class SSA
     }
 
     ProjectStructure projStructure = createProject(projName, srcTopDir);
-    Printer.print(projStructure);
+    Printer.print(projStructure, true);
 
     FileIO.write(projStructure);
   }

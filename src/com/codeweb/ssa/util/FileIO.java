@@ -10,6 +10,7 @@ import java.util.Date;
 
 import com.codeweb.ssa.model.ProjectStructure;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 public class FileIO
 {
@@ -17,7 +18,7 @@ public class FileIO
 
   public static void write(ProjectStructure projStructure) throws IOException
   {
-    Gson gson = new Gson();
+    Gson gson = new GsonBuilder().setPrettyPrinting().create();
     String json = gson.toJson(projStructure);
 
     String projName = projStructure.getProjName().replaceAll("[^a-zA-Z0-9.-]", "_");

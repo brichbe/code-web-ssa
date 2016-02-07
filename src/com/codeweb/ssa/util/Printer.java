@@ -5,16 +5,27 @@ import java.util.Collection;
 import com.codeweb.ssa.model.ProjectPackage;
 import com.codeweb.ssa.model.ProjectSrcFile;
 import com.codeweb.ssa.model.ProjectStructure;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 public class Printer
 {
-  public static void print(ProjectStructure projStructure)
+  public static void print(ProjectStructure projStructure, boolean asJson)
   {
-    System.out.println("Proj Structure for: " + projStructure.getProjName());
-    print(projStructure.getTopPackages());
+    if (asJson)
+    {
+      Gson gson = new GsonBuilder().setPrettyPrinting().create();
+      String json = gson.toJson(projStructure);
+      System.out.println(json);
+    }
+    else
+    {
+      System.out.println("Proj Structure for: " + projStructure.getProjName());
+      print(projStructure.getTopPackages());
+    }
   }
 
-  public static void print(Collection<ProjectPackage> pkgs)
+  static void print(Collection<ProjectPackage> pkgs)
   {
     for (ProjectPackage pkg : pkgs)
     {
