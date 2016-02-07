@@ -9,7 +9,9 @@ import com.codeweb.ssa.model.ProjectPackage;
 import com.codeweb.ssa.model.ProjectSrcFile;
 import com.codeweb.ssa.model.ProjectStructure;
 import com.codeweb.ssa.util.CountSLOC;
+import com.codeweb.ssa.util.FileIO;
 import com.codeweb.ssa.util.PackageFileFilter;
+import com.codeweb.ssa.util.Printer;
 import com.codeweb.ssa.util.SourceFilenameFilter;
 
 public class SSA
@@ -17,10 +19,10 @@ public class SSA
   private static final PackageFileFilter PACKAGE_FILTER = new PackageFileFilter();
   private static final SourceFilenameFilter SOURCE_FILTER = new SourceFilenameFilter();
 
-  public static void main(String[] args)
+  public static void main(String[] args) throws IOException
   {
-    String projName = "Sandbox";
-    String srcTopDir = "C:\\dev\\projects\\Sandbox\\src";
+    String projName = "CodeWeb SSA";
+    String srcTopDir = "C:\\dev\\checkout\\CodeWeb-SSA\\src";
     if (args.length > 0)
     {
       projName = args[0];
@@ -31,9 +33,9 @@ public class SSA
     }
 
     ProjectStructure projStructure = createProject(projName, srcTopDir);
+    Printer.print(projStructure);
 
-    System.out.println("Proj Structure for: " + projStructure.getProjName());
-    print(projStructure.getTopPackages());
+    FileIO.write(projStructure);
   }
 
   private static ProjectStructure createProject(String projName, String srcTopDir)
@@ -45,22 +47,6 @@ public class SSA
       projStructure.addTopPackage(pkg);
     }
     return projStructure;
-  }
-
-  static void print(Collection<ProjectPackage> pkgs)
-  {
-    for (ProjectPackage pkg : pkgs)
-    {
-      System.out.println(pkg.getName());
-      if (!pkg.getSrcFiles().isEmpty())
-      {
-        for (ProjectSrcFile src : pkg.getSrcFiles())
-        {
-          System.out.println("\t" + src.getName() + "  (" + src.getSlocCount() + ")");
-        }
-      }
-      print(pkg.getSubPackages());
-    }
   }
 
   static Collection<ProjectPackage> buildPackageStructure(String srcTopDir)
