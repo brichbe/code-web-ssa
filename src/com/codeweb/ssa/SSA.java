@@ -21,8 +21,8 @@ public class SSA
 
   public static void main(String[] args) throws IOException
   {
-    String projName = "tem-web-client";
-    String srcTopDir = "C:\\dev\\checkout\\com-idsi-tem-web-client\\webapp\\src\\gwtapp\\src";//"C:\\dev\\projects\\Sandbox\\src";//"C:\\dev\\checkout\\CodeWeb-SSA\\src";
+    String projName = "Fibonacci";
+    String srcTopDir = "C:\\dev\\projects\\Sandbox\\src";//"C:\\dev\\checkout\\CodeWeb-SSA\\src";
     if (args.length > 0)
     {
       projName = args[0];
@@ -33,9 +33,9 @@ public class SSA
     }
 
     ProjectStructure projStructure = createProject(projName, srcTopDir);
-    Printer.print(projStructure, true);
+    Printer.printJson(projStructure);
 
-    FileIO.write(projStructure, projStructure.getProjName(), System.currentTimeMillis(), ".ssa");
+    FileIO.writeJson(projStructure, projStructure.getProjName(), System.currentTimeMillis(), ".ssa");
   }
 
   private static ProjectStructure createProject(String projName, String srcTopDir)
