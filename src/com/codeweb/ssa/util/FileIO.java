@@ -16,15 +16,19 @@ public class FileIO
 {
   private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss");
 
-  public static void write(ProjectStructure projStructure) throws IOException
+  public static void write(Object object, String dataObjName, long dtg, String fileExt) throws IOException
   {
     Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    String json = gson.toJson(projStructure);
+    String json = gson.toJson(object);
+    writeJson(json, dataObjName, dtg, fileExt);
+  }
 
-    String projName = projStructure.getProjName().replaceAll("[^a-zA-Z0-9.-]", "_");
-    String dtgStr = dateFormat.format(new Date());
-    File f = new File(projName + "_" + dtgStr + ".ssa");
-    
+  private static void writeJson(String json, String dataObjName, long dtg, String fileExt) throws IOException
+  {
+    dataObjName = dataObjName.replaceAll("[^a-zA-Z0-9.-]", "_");
+    String dtgStr = dateFormat.format(new Date(dtg));
+    File f = new File(dataObjName + "_" + dtgStr + fileExt);
+
     FileWriter writer = new FileWriter(f);
     writer.write(json);
     writer.close();
