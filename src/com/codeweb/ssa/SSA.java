@@ -17,12 +17,12 @@ import com.codeweb.ssa.util.SourceFilenameFilter;
 public class SSA
 {
   private static final PackageFileFilter PACKAGE_FILTER = new PackageFileFilter();
-  private static final SourceFilenameFilter SOURCE_FILTER = new SourceFilenameFilter();
+  private static final SourceFilenameFilter JAVA_SOURCE_FILTER = new SourceFilenameFilter(".java");
 
   public static void main(String[] args) throws IOException
   {
-    String projName = "CodeWeb SSA";
-    String srcTopDir = "C:\\dev\\checkout\\CodeWeb-SSA\\src";
+    String projName = "tem-web-client";
+    String srcTopDir = "C:\\dev\\checkout\\com-idsi-tem-web-client\\webapp\\src\\gwtapp\\src";//"C:\\dev\\projects\\Sandbox\\src";//"C:\\dev\\checkout\\CodeWeb-SSA\\src";
     if (args.length > 0)
     {
       projName = args[0];
@@ -35,7 +35,7 @@ public class SSA
     ProjectStructure projStructure = createProject(projName, srcTopDir);
     Printer.print(projStructure, true);
 
-    FileIO.write(projStructure);
+    FileIO.write(projStructure, projStructure.getProjName(), System.currentTimeMillis(), ".ssa");
   }
 
   private static ProjectStructure createProject(String projName, String srcTopDir)
@@ -74,7 +74,7 @@ public class SSA
     File file = new File(dirPath);
     if (file.exists() && file.canRead())
     {
-      File[] dirFiles = file.listFiles(SOURCE_FILTER);
+      File[] dirFiles = file.listFiles(JAVA_SOURCE_FILTER);
       File[] subDirs = file.listFiles(PACKAGE_FILTER);
       if ((dirFiles != null && dirFiles.length > 0) || (subDirs != null && subDirs.length > 0))
       {
