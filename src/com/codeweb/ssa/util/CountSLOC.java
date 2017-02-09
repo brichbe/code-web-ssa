@@ -18,7 +18,7 @@ public class CountSLOC
         while ((line = br.readLine()) != null)
         {
           line = line.replaceAll("\\n|\\t|\\s", "").trim();
-          if (!line.isEmpty() && !line.startsWith("//"))
+          if (!line.isEmpty() && !line.startsWith("/") && !line.startsWith("*"))
           {
             count++;
           }
