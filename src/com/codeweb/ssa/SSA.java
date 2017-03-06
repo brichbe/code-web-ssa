@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
+
 import com.codeweb.ssa.model.ProjectPackage;
 import com.codeweb.ssa.model.ProjectSrcFile;
 import com.codeweb.ssa.model.ProjectStructure;
@@ -18,24 +21,67 @@ public class SSA
 {
   private static final PackageFileFilter PACKAGE_FILTER = new PackageFileFilter();
   private static final SourceFilenameFilter JAVA_SOURCE_FILTER = new SourceFilenameFilter(".java");
+  private static final String EXTRACT_DIR = "temp";
 
   public static void main(String[] args) throws IOException
   {
-    String projName = "Fibonacci";
-    String srcTopDir = "C:\\dev\\projects\\Sandbox\\src";//"C:\\dev\\checkout\\CodeWeb-SSA\\src";
-    if (args.length > 0)
+    boolean inputValid = false;
+    if (args.length == 1)
     {
-      projName = args[0];
+      File compressedFile = new File(args[0]);
+      if (compressedFile.exists() && compressedFile.isFile())
+      {
+        String filename = compressedFile.getName();
+        try
+        {
+          ZipFile zipFile = new ZipFile(compressedFile);
+          zipFile.extractAll(EXTRACT_DIR);
+          String projName = filename.substring(0, filename.lastIndexOf("."));
+          inputValid = true;
+          processInput(projName, EXTRACT_DIR);
+        }
+        catch (ZipException e)
+        {
+          e.printStackTrace();
+        }
+        finally
+        {
+          FileIO.deleteDir(new File(EXTRACT_DIR));
+        }
+      }
     }
-    if (args.length > 1)
+    else if (args.length == 2)
     {
-      srcTopDir = args[1];
+      String srcTopDir = args[1];
+      File dir = new File(srcTopDir);
+      if (dir.exists() && dir.isDirectory())
+      {
+        inputValid = true;
+        processInput(args[0], srcTopDir);
+      }
     }
 
+    if (!inputValid)
+    {
+      printUsageAndExit();
+    }
+  }
+
+  private static void processInput(String projName, String srcTopDir) throws IOException
+  {
     ProjectStructure projStructure = createProject(projName, srcTopDir);
     Printer.printJson(projStructure);
 
     FileIO.writeJson(projStructure, projStructure.getProjName(), System.currentTimeMillis(), ".ssa");
+  }
+
+  private static void printUsageAndExit()
+  {
+    System.out.println("Usage:");
+    System.out.println("SSA <path to ZIP/JAR file>");
+    System.out.println("- or -");
+    System.out.println("SSA <project name> <path to project source root>");
+    System.exit(1);
   }
 
   private static ProjectStructure createProject(String projName, String srcTopDir)
