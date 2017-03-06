@@ -23,56 +23,27 @@ public class SSA
   private static final SourceFilenameFilter JAVA_SOURCE_FILTER = new SourceFilenameFilter(".java");
   private static final String EXTRACT_DIR = "temp";
 
+  private ProjectStructure projStructure;
+
   public static void main(String[] args) throws IOException
   {
-    boolean inputValid = false;
+    SSA ssa = null;
     if (args.length == 1)
     {
-      File compressedFile = new File(args[0]);
-      if (compressedFile.exists() && compressedFile.isFile())
-      {
-        String filename = compressedFile.getName();
-        try
-        {
-          ZipFile zipFile = new ZipFile(compressedFile);
-          zipFile.extractAll(EXTRACT_DIR);
-          String projName = filename.substring(0, filename.lastIndexOf("."));
-          inputValid = true;
-          processInput(projName, EXTRACT_DIR);
-        }
-        catch (ZipException e)
-        {
-          e.printStackTrace();
-        }
-        finally
-        {
-          FileIO.deleteDir(new File(EXTRACT_DIR));
-        }
-      }
+      ssa = fromArchive(args[0]);
     }
     else if (args.length == 2)
     {
-      String srcTopDir = args[1];
-      File dir = new File(srcTopDir);
-      if (dir.exists() && dir.isDirectory())
-      {
-        inputValid = true;
-        processInput(args[0], srcTopDir);
-      }
+      ssa = fromSrcTopDir(args[0], args[1]);
     }
 
-    if (!inputValid)
+    if (ssa == null)
     {
       printUsageAndExit();
     }
-  }
 
-  private static void processInput(String projName, String srcTopDir) throws IOException
-  {
-    ProjectStructure projStructure = createProject(projName, srcTopDir);
-    Printer.printJson(projStructure);
-
-    FileIO.writeJson(projStructure, projStructure.getProjName(), System.currentTimeMillis(), ".ssa");
+    ssa.printProject();
+    ssa.writeProjectFile();
   }
 
   private static void printUsageAndExit()
@@ -84,7 +55,62 @@ public class SSA
     System.exit(1);
   }
 
-  private static ProjectStructure createProject(String projName, String srcTopDir)
+  public static SSA fromSrcTopDir(String projName, String srcTopDir)
+  {
+    File dir = new File(srcTopDir);
+    if (dir.exists() && dir.isDirectory())
+    {
+      return new SSA(projName, srcTopDir);
+    }
+    return null;
+  }
+
+  public static SSA fromArchive(String srcArchiveFilePath)
+  {
+    File srcArchiveFile = new File(srcArchiveFilePath);
+    if (srcArchiveFile.exists() && srcArchiveFile.isFile())
+    {
+      try
+      {
+        ZipFile zipFile = new ZipFile(srcArchiveFile);
+        zipFile.extractAll(EXTRACT_DIR);
+        String filename = srcArchiveFile.getName();
+        String projName = filename.substring(0, filename.lastIndexOf("."));
+        return new SSA(projName, EXTRACT_DIR);
+      }
+      catch (ZipException e)
+      {
+        e.printStackTrace();
+      }
+      finally
+      {
+        FileIO.deleteDir(new File(EXTRACT_DIR));
+      }
+    }
+    return null;
+  }
+
+  protected SSA(String projName, String srcTopDir)
+  {
+    this.projStructure = createProject(projName, srcTopDir);
+  }
+
+  public ProjectStructure getProjStructure()
+  {
+    return projStructure;
+  }
+
+  public void printProject()
+  {
+    Printer.printJson(projStructure);
+  }
+
+  public void writeProjectFile() throws IOException
+  {
+    FileIO.writeJson(projStructure, projStructure.getProjName(), System.currentTimeMillis(), ".ssa");
+  }
+
+  public static ProjectStructure createProject(String projName, String srcTopDir)
   {
     ProjectStructure projStructure = new ProjectStructure(projName);
     Collection<ProjectPackage> projPackages = buildPackageStructure(srcTopDir);
