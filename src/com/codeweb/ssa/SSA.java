@@ -21,7 +21,7 @@ public class SSA
 {
   private static final PackageFileFilter PACKAGE_FILTER = new PackageFileFilter();
   private static final SourceFilenameFilter JAVA_SOURCE_FILTER = new SourceFilenameFilter(".java");
-  private static final String EXTRACT_DIR = "temp";
+  private static final String EXTRACT_DIR = System.getProperty("java.io.tmpdir", "temp");
 
   private ProjectStructure projStructure;
 
@@ -84,7 +84,10 @@ public class SSA
       }
       finally
       {
-        FileIO.deleteDir(new File(EXTRACT_DIR));
+        if (!srcArchiveFile.delete())
+        {
+          srcArchiveFile.deleteOnExit();
+        }
       }
     }
     return null;
